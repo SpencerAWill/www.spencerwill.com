@@ -1,0 +1,13 @@
+{
+  "name": "www.spencerwill.com",
+  "version": "0.0.0",
+  "description": "Spencer Will's personal site",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "author": "Spencer Will",
+  "packageManager": "pnpm@11.24.0",
+  "engines": {
+    "node": ">=24"
+  }
+}

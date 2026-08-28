@@ -1,0 +1,112 @@
+{
+  "name": "www.spencerwill.com",
+
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".",
+    "args": {
+      "NODE_VARIANT": "24-bookworm",
+      "USERNAME": "dev"
+    }
+  },
+
+  "features": {
+    // Official way to put the account on zsh. The base image ships oh-my-zsh
+    // but leaves the user on /bin/bash, and VS Code only papers over that with
+    // a terminal-profile setting that Zed does not read -- Zed asks passwd.
+    // installOhMyZshConfig is off because features run *after* the Dockerfile,
+    // and the template it installs would overwrite the theme and plugin list
+    // set there. upgradePackages is off to keep builds reproducible and quick.
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "username": "dev",
+      "configureZshAsDefaultShell": true,
+      "installOhMyZsh": true,
+      "installOhMyZshConfig": false,
+      "upgradePackages": false
+    },
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "installDirectlyFromGitHubRelease": true,
+      "version": "latest"
+    }
+  },
+
+  "remoteUser": "dev",
+
+  // Without this Docker assigns a random name (naughty_sinoussi and friends),
+  // which makes `docker ps` and `docker exec` guesswork. --hostname also gives
+  // the shell prompt something meaningful to show instead of a container id.
+  "runArgs": ["--name", "www-spencerwill-com-dev", "--hostname", "swc-dev"],
+
+  // Explicit rather than relying on the default, so the path is stable and
+  // matches ucmc.spencerwill.com.
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+  "workspaceFolder": "/workspace",
+
+  "mounts": [
+    // Claude Code state: session transcripts (.claude/projects/**/*.jsonl),
+    // prompt history, and -- thanks to CLAUDE_CONFIG_DIR in the Dockerfile --
+    // .claude.json. Survives rebuilds, so `claude --resume` still works.
+    "source=swc-claude-data,target=/home/dev/.claude,type=volume",
+    "source=swc-command-history,target=/commandhistory,type=volume",
+    // node_modules on a volume rather than the macOS bind mount. Two reasons:
+    // bind-mounted node_modules is slow, and pnpm's store lives inside this
+    // volume (see Dockerfile) so its hardlinks stay on one filesystem.
+    // To undo: delete this line and the store-dir npmrc line in the Dockerfile.
+    "source=swc-node-modules,target=/workspace/node_modules,type=volume",
+    // Inherit the host's `gh auth login`. Only carries a token if the host
+    // stored it in hosts.yml (`gh auth login --insecure-storage`) rather than
+    // the macOS Keychain -- this host already has.
+    "source=${localEnv:HOME}/.config/gh,target=/home/dev/.config/gh,type=bind,consistency=cached"
+  ],
+
+  // Per-host values live here; static ones are ENV in the Dockerfile.
+  "containerEnv": {
+    "TZ": "${localEnv:TZ:America/New_York}"
+  },
+
+  "forwardPorts": [5173],
+  "portsAttributes": {
+    "5173": {
+      "label": "Vite dev server",
+      "onAutoForward": "notify"
+    }
+  },
+
+  // Host-side hook, before the container exists. See the script for why it is
+  // not inlined here.
+  "initializeCommand": [".devcontainer/initialize.sh"],
+
+  "onCreateCommand": ".devcontainer/lifecycle.sh on-create",
+  "updateContentCommand": ".devcontainer/lifecycle.sh update-content",
+  "postCreateCommand": ".devcontainer/lifecycle.sh post-create",
+  "postStartCommand": ".devcontainer/lifecycle.sh post-start",
+  "postAttachCommand": ".devcontainer/lifecycle.sh post-attach",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-code",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "editorconfig.editorconfig",
+        "yoavbls.pretty-ts-errors",
+        "usernamehw.errorlens",
+        "vitest.explorer",
+        "github.vscode-github-actions",
+        "github.vscode-pull-request-github",
+        "mikestead.dotenv",
+        "vivaxy.vscode-conventional-commits"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+        "terminal.integrated.defaultProfile.linux": "zsh"
+      }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+# No members yet. The site itself will land here as a package (e.g. apps/web)
+# once it's scaffolded; until then this file exists to mark the workspace root
+# and to hold the settings below.
+packages: []
+
+# pnpm fills node_modules by hardlinking out of its content-addressable store,
+# and hardlinks cannot cross filesystems. In the dev container node_modules is a
+# named Docker volume, and on Docker Desktop every volume and bind mount is a
+# separate filesystem -- measured, not assumed: volume -> bind and volume ->
+# other-volume both fail with EXDEV. Left alone, pnpm notices and relocates the
+# store to /workspace/.pnpm-store on the (slow) bind mount. Keeping the store
+# inside node_modules puts both on one filesystem, so the hardlinks work.
+#
+# Deliberately relative: it resolves against the workspace root, so it is
+# correct in the container, on the host, and in CI without special-casing.
+# Note this must live here rather than in .npmrc -- pnpm 11 no longer reads
+# pnpm settings from .npmrc (same migration as `overrides`).
+storeDir: node_modules/.store
+
+# Quarantine window for newly published versions -- refuses to install anything
+# released in the last 7 days. Carried over from ucmc.spencerwill.com, where
+# it's the primary supply-chain defense: it catches publish-compromise incidents
+# (e.g. the TanStack `latest`-tag hijack) before they reach the tree.
+# Consequence worth knowing: a just-released TanStack/Vite version will be
+# refused until it ages out. Escape hatch is `minimumReleaseAgeExclude`.
+minimumReleaseAge: 10080
