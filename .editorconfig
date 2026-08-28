@@ -1,0 +1,39 @@
+# The one formatting contract every tool here reads: Zed natively, VS Code via
+# the editorconfig extension pinned in devcontainer.json, and Biome itself
+# through formatter.useEditorconfig.
+#
+# This closes the gap Biome cannot: Biome only reformats on save, and only for
+# languages it ships a parser for. EditorConfig applies indentation and
+# whitespace rules as you type, in every file type -- Markdown, YAML, shell,
+# Dockerfile -- which is where Zed was otherwise falling back to its own
+# defaults (4-space tabs) and appearing to ignore the repo's style.
+#
+# Keep the [*] block in sync with the formatter block in biome.json. Where the
+# two disagree biome.json wins, and the symptom is a save-time reformat that
+# fights what the editor just did.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Biome's default lineWidth, restated so editors draw the wrap guide in the
+# same column Biome will actually break at.
+max_line_length = 80
+
+# Two trailing spaces are a hard line break in Markdown -- trimming them
+# silently changes the rendered output.
+[*.md]
+trim_trailing_whitespace = false
+
+# Generated, never hand-edited. Biome already excludes routeTree.gen.ts; this
+# keeps an editor from reflowing either one if something does open them.
+[{pnpm-lock.yaml,routeTree.gen.ts}]
+indent_size = unset
+max_line_length = unset
+insert_final_newline = unset
+trim_trailing_whitespace = unset

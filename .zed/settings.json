@@ -5,8 +5,13 @@
 
   // Biome is the whole toolchain here (lint + format + import sorting), so every
   // language it owns is pointed at its language server explicitly. Zed picks up
-  // biome.json from apps/web automatically; `require_config_file` keeps it from
-  // silently formatting with built-in defaults anywhere a config is missing.
+  // biome.json from the workspace root automatically; `require_config_file`
+  // keeps it from silently formatting with built-in defaults anywhere a config
+  // is missing.
+  //
+  // Everything Biome has no parser for -- Markdown, YAML, shell, Dockerfile --
+  // is governed by .editorconfig instead, which Zed reads natively with no
+  // setting required and applies as you type rather than on save.
   "lsp": {
     "biome": {
       "settings": {

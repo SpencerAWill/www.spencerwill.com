@@ -22,6 +22,7 @@
   },
   "formatter": {
     "enabled": true,
+    "useEditorconfig": true,
     "indentStyle": "space",
     "indentWidth": 2
   },
