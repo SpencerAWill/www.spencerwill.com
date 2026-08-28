@@ -28,7 +28,17 @@
     "ghcr.io/devcontainers/features/github-cli:1": {
       "installDirectlyFromGitHubRelease": true,
       "version": "latest"
-    }
+    },
+    // Wrangler, for Cloudflare Workers. A thin wrapper: its install.sh shells
+    // out to the npm-package feature, so this lands as a global `npm i -g
+    // wrangler`, outside the pnpm store and outside the node_modules volume.
+    //
+    // Left on the default "latest" rather than pinned. Note that the lock file
+    // below fixes only this feature's own digest -- the wrangler version it
+    // resolves, and the npm-package feature it pulls at install time, are not
+    // covered by it. Pass "version": "4.127.0" here if that matters more than
+    // staying current.
+    "ghcr.io/devcontainers-extra/features/cloudflare-wrangler:1": {}
   },
 
   "remoteUser": "dev",

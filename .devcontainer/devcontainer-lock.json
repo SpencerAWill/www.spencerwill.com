@@ -5,6 +5,11 @@
       "resolved": "ghcr.io/anthropics/devcontainer-features/claude-code@sha256:cfc2e7d3e9fd3b9b01f8d5cb158508a884c8c0ede2e23ed10f32dea5d4ffe69a",
       "integrity": "sha256:cfc2e7d3e9fd3b9b01f8d5cb158508a884c8c0ede2e23ed10f32dea5d4ffe69a"
     },
+    "ghcr.io/devcontainers-extra/features/cloudflare-wrangler:1": {
+      "version": "1.0.3",
+      "resolved": "ghcr.io/devcontainers-extra/features/cloudflare-wrangler@sha256:36f8ceba43b2503022e6eff4ad80ef4848d54c369d9bc966bf7063517b9a7eb5",
+      "integrity": "sha256:36f8ceba43b2503022e6eff4ad80ef4848d54c369d9bc966bf7063517b9a7eb5"
+    },
     "ghcr.io/devcontainers/features/common-utils:2": {
       "version": "2.5.9",
       "resolved": "ghcr.io/devcontainers/features/common-utils@sha256:cb0c4d3c276f157eed17935747e364178d75fee17f55c4e129966f64633deb3a",
