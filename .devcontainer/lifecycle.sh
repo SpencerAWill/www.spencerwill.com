@@ -138,7 +138,7 @@ post_start() {
 }
 
 post_attach() {
-  log "workspace $PWD -- vite will be on :5173 (bind 0.0.0.0)"
+  log "workspace $PWD -- vite dev on :5173, preview on :4173 (0.0.0.0, published)"
 }
 
 case "$STAGE" in

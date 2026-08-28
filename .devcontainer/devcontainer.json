@@ -65,11 +65,27 @@
     "TZ": "${localEnv:TZ:America/New_York}"
   },
 
-  "forwardPorts": [5173],
+  // appPort is a real `docker run -p`, so the ports are published the moment the
+  // container starts, for any client. forwardPorts below is VS Code's own
+  // dynamic forwarding -- good UX there, but it is an editor feature, and Zed
+  // implements no equivalent, so on its own it would leave the dev server
+  // unreachable from the host under Zed. Both are listed: appPort does the work,
+  // forwardPorts keeps the labels and notifications in VS Code.
+  //
+  // The cost of appPort is that container start fails outright if 5173 or 4173
+  // is already taken on the host -- which is the same trade strictPort makes in
+  // vite.config.ts, and preferable to a silent no-op mapping.
+  "appPort": ["5173:5173", "4173:4173"],
+
+  "forwardPorts": [5173, 4173],
   "portsAttributes": {
     "5173": {
       "label": "Vite dev server",
       "onAutoForward": "notify"
+    },
+    "4173": {
+      "label": "Vite preview (production build)",
+      "onAutoForward": "silent"
     }
   },
 
