@@ -1,7 +1,13 @@
-# No members yet. The site itself will land here as a package (e.g. apps/web)
-# once it's scaffolded; until then this file exists to mark the workspace root
-# and to hold the settings below.
-packages: []
+packages:
+  - apps/*
+
+# Native postinstall builds are opt-in in pnpm 11. These two ship prebuilt
+# binaries that Vite/Tailwind need at build time, so they must be allowed to
+# run their install scripts. Declared here rather than in apps/web because
+# pnpm only reads build allowances from the workspace root.
+allowBuilds:
+  esbuild: true
+  lightningcss: true
 
 # pnpm fills node_modules by hardlinking out of its content-addressable store,
 # and hardlinks cannot cross filesystems. In the dev container node_modules is a
