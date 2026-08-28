@@ -31,6 +31,59 @@ claim_volumes() {
   done
 }
 
+# Git identity is not inherited here, and that surprises people. VS Code's Dev
+# Containers extension copies the host ~/.gitconfig in automatically
+# (dev.containers.copyGitConfig, on by default), but that is a behavior of that
+# extension, not of the dev container spec -- Zed implements no equivalent. So
+# under Zed the container comes up with no user.name/user.email and every commit
+# aborts with "Author identity unknown".
+#
+# Deriving it from the gh credentials already bind-mounted at ~/.config/gh is
+# preferable to bind-mounting the host .gitconfig, which would drag in macOS-only
+# settings -- credential.helper=osxkeychain, signing keys pointing at host paths,
+# commit.gpgsign -- that are broken or absent in here.
+#
+# Guarded on user.email being unset, so a manual `git config --global` always
+# wins and the gh API call only happens when there is nothing to fall back on.
+configure_git() {
+  if ! git config --global user.email >/dev/null 2>&1; then
+    if gh auth status >/dev/null 2>&1; then
+      local login name email id
+      login=$(gh api user --jq '.login' 2>/dev/null || true)
+      name=$(gh api user --jq '.name // .login' 2>/dev/null || true)
+      email=$(gh api user --jq '.email' 2>/dev/null || true)
+
+      # A profile that keeps its address private reports null; GitHub expects
+      # commits to carry the noreply form in that case.
+      if [ -z "$email" ] || [ "$email" = "null" ]; then
+        id=$(gh api user --jq '.id' 2>/dev/null || true)
+        if [ -n "$id" ] && [ -n "$login" ]; then
+          email="${id}+${login}@users.noreply.github.com"
+        fi
+      fi
+
+      if [ -n "$name" ] && [ -n "$email" ] && [ "$name" != "null" ]; then
+        log "git identity $name <$email> (derived from gh)"
+        git config --global user.name "$name"
+        git config --global user.email "$email"
+      else
+        log "WARN: could not derive a git identity from gh -- commits will fail"
+      fi
+    else
+      log "WARN: no git identity and gh is not authenticated -- commits will fail"
+    fi
+  fi
+
+  # gh holds a token but does not wire itself into git unless asked, so https
+  # pushes would otherwise prompt for a password that does not exist.
+  if ! git config --global --get-regexp '^credential\..*github\.com.*\.helper' >/dev/null 2>&1; then
+    if gh auth status >/dev/null 2>&1; then
+      log "configuring gh as the git credential helper"
+      gh auth setup-git 2>/dev/null || log "WARN: gh auth setup-git failed"
+    fi
+  fi
+}
+
 on_create() {
   claim_volumes
 
@@ -50,6 +103,8 @@ ZRC
   # The workspace is a bind mount from macOS; uid mapping can make git call it
   # "dubious ownership" and refuse to run.
   git config --global --add safe.directory "$PWD" 2>/dev/null || true
+
+  configure_git
 }
 
 update_content() {
@@ -79,6 +134,7 @@ post_create() {
 
 post_start() {
   claim_volumes
+  configure_git
 }
 
 post_attach() {
