@@ -1,17 +1,133 @@
-
 @import "tailwindcss";
 
-* {
-  box-sizing: border-box;
+/* ---------------------------------------------------------------------------
+   Semantic palette. Tailwind's @theme below points at these, so every utility
+   (bg-paper, text-ink, ...) resolves through one indirection and re-themes at
+   runtime. Swapping a value here re-colours the whole site with no rebuild.
+   --------------------------------------------------------------------------- */
+:root {
+  --c-paper: #f7f5ee;
+  --c-paper-2: #fffdf8;
+  --c-sunk: #edeadf;
+  --c-ink: #16231b;
+  --c-body: #4c5c51;
+  --c-muted: #8b968a;
+  --c-line: #e3e0d2;
+  --c-line-2: #d4d9cb;
+  --c-accent: #2f5d3f;
+  --c-accent-soft: #e9efe4;
+  --c-warm: #c2521f;
+  --c-warm-soft: #fbe9df;
+  --grain-opacity: 0.55;
 }
 
-html,
-body,
-#app {
-  min-height: 100%;
+/* Paper texture reads as noise rather than grain on a dark ground, so the dark
+   theme all but removes it. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --c-paper: #0d120f;
+    --c-paper-2: #131c16;
+    --c-sunk: #111a14;
+    --c-ink: #eef3ee;
+    --c-body: #94a497;
+    --c-muted: #6d7d70;
+    --c-line: #1f2b23;
+    --c-line-2: #26352b;
+    --c-accent: #7fb98a;
+    --c-accent-soft: #15221b;
+    --c-warm: #e08150;
+    --c-warm-soft: #2a1a12;
+    --grain-opacity: 0.35;
+  }
 }
 
-body {
-  margin: 0;
+:root[data-theme="dark"] {
+  --c-paper: #0d120f;
+  --c-paper-2: #131c16;
+  --c-sunk: #111a14;
+  --c-ink: #eef3ee;
+  --c-body: #94a497;
+  --c-muted: #6d7d70;
+  --c-line: #1f2b23;
+  --c-line-2: #26352b;
+  --c-accent: #7fb98a;
+  --c-accent-soft: #15221b;
+  --c-warm: #e08150;
+  --c-warm-soft: #2a1a12;
+  --grain-opacity: 0.35;
 }
 
+@theme {
+  --font-display: "Fraunces", Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-paper: var(--c-paper);
+  --color-paper-2: var(--c-paper-2);
+  --color-sunk: var(--c-sunk);
+  --color-ink: var(--c-ink);
+  --color-body: var(--c-body);
+  --color-muted: var(--c-muted);
+  --color-line: var(--c-line);
+  --color-line-2: var(--c-line-2);
+  --color-accent: var(--c-accent);
+  --color-accent-soft: var(--c-accent-soft);
+  --color-warm: var(--c-warm);
+  --color-warm-soft: var(--c-warm-soft);
+
+  --container-measure: 42.5rem;
+}
+
+@layer base {
+  html {
+    color-scheme: light dark;
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body {
+    background-color: var(--c-paper);
+    color: var(--c-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /*
+    Paper texture. A real greyscale noise tile rather than an inline SVG
+    feTurbulence filter: the filter output could not be verified outside a
+    browser, and an <svg> element is a replaced element that collapses to its
+    intrinsic 300x150 unless explicitly sized -- which is what made the earlier
+    version render as a patch in the corner.
+
+    The tile is mid-grey, so `overlay` leaves the underlying colour alone and
+    only the deviation from grey shows as texture. Applying it flat instead
+    would wash the whole page toward grey. Strength is --grain-opacity.
+  */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image: url("/grain.png");
+    background-repeat: repeat;
+    mix-blend-mode: overlay;
+    opacity: var(--grain-opacity);
+  }
+
+  ::selection {
+    background-color: var(--c-accent-soft);
+    color: var(--c-accent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--c-warm);
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
+}
