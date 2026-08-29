@@ -33,12 +33,11 @@ function Home() {
           <span className="mx-2 text-muted">·</span>
           {profile.location}
         </p>
-        <p className="mt-5 text-[1.09rem] text-body leading-relaxed">
-          {profile.pitch} Most recently as{" "}
-          <span className="font-semibold text-ink">
-            {profile.pitchEmphasis}
-          </span>{" "}
-          {profile.pitchTail}
+        <p className="mt-5 text-[1.09rem] text-ink leading-relaxed">
+          {profile.summary[0]}
+        </p>
+        <p className="mt-3 text-[1rem] text-body leading-relaxed">
+          {profile.summary[1]}
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-2.5">
           <OutboundLink
@@ -75,16 +74,12 @@ function Home() {
       <Section
         id="background"
         title="Background"
-        sub="School ran straight through the work — this is what overlapped."
+        sub="What overlapped, year by year."
       >
         <YearStack />
       </Section>
 
-      <Section
-        id="toolkit"
-        title="Toolkit"
-        sub="Depth first — the top two rows are where I actually live."
-      >
+      <Section id="toolkit" title="Technical skills">
         <dl className="grid grid-cols-1 gap-x-5 gap-y-1 sm:grid-cols-[6.5rem_1fr] sm:gap-y-3">
           {skills.map((row) => (
             <div key={row.label} className="contents">
@@ -111,16 +106,9 @@ function Home() {
         </dl>
       </Section>
 
-      <Section title="Away from the keyboard" sub="Climbing, mostly.">
+      <Section title="Leadership">
         <p className="text-[0.94rem] text-body leading-relaxed">
-          President of the{" "}
-          <span className="font-semibold text-ink">
-            UC Competitive Climbing Club
-          </span>{" "}
-          (2024–25) and Team Captain before that, coaching 25+ members through
-          five USA Climbing competitions a season and running the executive
-          board, club operations, and gym partnerships. The gear platform above
-          exists because I got tired of the spreadsheet.
+          {profile.leadership}
         </p>
       </Section>
     </>

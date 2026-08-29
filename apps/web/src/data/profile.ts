@@ -9,11 +9,12 @@ export const profile = {
   employer: "Seven Hills Technology",
   location: "Cincinnati, OH",
   email: "spencer.a.will@gmail.com",
-  pitch:
-    "I build and own production systems end to end — C#/.NET and TypeScript on Azure.",
-  pitchEmphasis: "sole architect and developer",
-  pitchTail:
-    "of a multi-tenant payroll integration platform, live for a national HR/payroll provider in about three months.",
+  summary: [
+    "Full-stack software engineer with 2+ years building production systems in C#/.NET, React, and TypeScript on Azure.",
+    "Sole architect and developer of a multi-tenant payroll integration platform now live for a national HR/payroll provider, processing 186,000+ records monthly. Comfortable across the whole stack — distributed cloud services, IAM, CI/CD and IaC, and the web and mobile interfaces on top.",
+  ],
+  leadership:
+    "President (2024–2025) and Team Captain (2023–2024) of the UC Competitive Climbing Club. Coached 25+ members across 5 USA Climbing competitions per season; managed club operations, executive board, and university and regional gym partnerships.",
   url: "https://spencerwill.com",
   employerUrl: "https://sevenhillstechnology.com",
   university: "University of Cincinnati",
@@ -47,9 +48,9 @@ export const projects: Project[] = [
     metrics: [
       { value: "186,000+", label: "records / month" },
       { value: "~3 mo", label: "concept to production" },
-      { value: "1", label: "engineer — me" },
+      { value: "1", label: "engineer, sole architect" },
     ],
-    body: "A configurable ETL job runner, plus a React admin dashboard giving live health monitoring of every tenant, integration, and job run. Hardened with retries, idempotency, Slack alerting, and CI merge gates. I was the sole technical contact across four parties: our team, the client, external vendors, and the payroll provider.",
+    body: "Shipped to production in ~3 months as sole architect and developer — a configurable ETL job runner now processing 186,000+ records monthly. Built a React admin dashboard (Static Web Apps + ASP.NET Core API, Entra ID OIDC) for live health monitoring of every tenant, integration, and job run; hardened execution with retries, idempotency, Slack alerting, and CI merge gates. Owned the full delivery lifecycle as sole technical contact across four parties — our team, the client, external vendors, and the payroll provider.",
     tags: [
       "ASP.NET Core",
       "Azure Functions",
@@ -66,13 +67,13 @@ export const projects: Project[] = [
       { value: "30,000+", label: "orders / month" },
       { value: "33", label: "locations" },
     ],
-    body: "Replaced a rigid templated ordering system with a fully custom frontend, backend, data warehouse, and admin platform on Azure. I wrote the majority of the ASP.NET Core backend and React frontends as one of three engineers over ~14 months, then supported it in production for five more.",
+    body: "Drove 30,000+ monthly orders and $1,500,000+ in monthly gross sales across 33 locations by replacing a rigid templated ordering system with a fully custom frontend, backend, data warehouse, and admin platform on Azure. Wrote the majority of the ASP.NET Core backend and React frontends as one of 3 engineers over ~14 months, then supported it in production for 5 more.",
     tags: ["ASP.NET Core", "React", "Azure", "Data warehouse"],
   },
   {
     title: "reMind — AI Voice Assistant for Memory Care",
     meta: "Senior capstone · 2025 – 2026",
-    body: "A realtime voice-to-voice agent running on Apple Watch for memory-care patients, with a caregiver interface. Local tool calling, live fall and distress detection with alerting, a semantic conversational memory store with summarization, and vector search over pgvector. I authored a custom Swift WebSocket library to stream audio to Azure AI Foundry's realtime model.",
+    body: "Built a realtime voice-to-voice agent on Apple Watch for memory-care patients and a caregiver user interface. It features local tool calling, live fall and distress detection with alerting, semantic conversational memory store and summarization, and semantic vector search using pgvector; authored a custom Swift WebSocket library streaming audio to Azure AI Foundry's realtime model.",
     tags: ["Swift", "WebSockets", "pgvector", "Azure AI Foundry"],
   },
   {
@@ -82,7 +83,7 @@ export const projects: Project[] = [
       { value: "~1,900", label: "pieces of gear" },
       { value: "100", label: "club members" },
     ],
-    body: "Replacing an Excel sheet with barcode checkout and return, passkey (WebAuthn) authentication, and role-based access control. Sole owner of architecture, deployment, and DNS — same stack this site runs on.",
+    body: "Building a platform on TanStack Start and Cloudflare Workers to replace Excel inventory for a 100-member club managing ~1,900 pieces of gear — barcode checkout and return, passkey (WebAuthn) auth, and RBAC; sole owner of architecture, deployment, and DNS.",
     tags: ["TanStack Start", "Cloudflare Workers", "WebAuthn", "D1"],
     href: "https://ucmc.spencerwill.com",
   },
