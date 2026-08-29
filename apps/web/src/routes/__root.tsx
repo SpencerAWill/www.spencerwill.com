@@ -10,6 +10,40 @@ import appCss from "../styles.css?url";
 
 const description = `${profile.role} at ${profile.employer} in ${profile.location}. I build and own production systems end to end — C#/.NET and TypeScript on Azure.`;
 
+const personSchema = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: profile.name,
+  url: profile.url,
+  image: `${profile.url}/og-image.jpg`,
+  jobTitle: profile.role,
+  worksFor: {
+    "@type": "Organization",
+    name: profile.employer,
+    url: profile.employerUrl,
+  },
+  alumniOf: {
+    "@type": "CollegeOrUniversity",
+    name: profile.university,
+  },
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Cincinnati",
+    addressRegion: "OH",
+    addressCountry: "US",
+  },
+  knowsAbout: [
+    "C#",
+    ".NET",
+    "TypeScript",
+    "React",
+    "Microsoft Azure",
+    "Distributed systems",
+    "Multi-tenant architecture",
+  ],
+  sameAs: [profile.links.github, profile.links.linkedin],
+};
+
 export const Route = createRootRoute({
   head: () => ({
     meta: [
@@ -20,6 +54,9 @@ export const Route = createRootRoute({
       { property: "og:title", content: `${profile.name} — ${profile.role}` },
       { property: "og:description", content: description },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: profile.name },
+      { property: "og:locale", content: "en_US" },
+      { name: "author", content: profile.name },
       { property: "og:url", content: profile.url },
       { property: "og:image", content: `${profile.url}/og-image.jpg` },
       { property: "og:image:width", content: "1200" },
@@ -30,6 +67,10 @@ export const Route = createRootRoute({
     ],
     links: [
       { rel: "canonical", href: profile.url },
+      // rel="me" is how Mastodon and similar tools verify a profile is really
+      // yours: they follow the link back and look for a matching reference.
+      { rel: "me", href: profile.links.github },
+      { rel: "me", href: profile.links.linkedin },
       { rel: "icon", href: "/favicon.ico", sizes: "any" },
       {
         rel: "icon",
@@ -43,15 +84,32 @@ export const Route = createRootRoute({
         href: "/apple-touch-icon.png",
       },
       { rel: "stylesheet", href: appCss },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      // Fonts carry crossorigin even though they are same-origin: font
+      // fetches are always CORS-mode, and without it the preload is discarded
+      // and the file downloaded a second time.
       {
-        rel: "preconnect",
-        href: "https://fonts.gstatic.com",
+        rel: "preload",
+        as: "font",
+        type: "font/woff2",
+        href: "/fonts/inter-400-600-latin.woff2",
         crossOrigin: "anonymous",
       },
       {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap",
+        rel: "preload",
+        as: "font",
+        type: "font/woff2",
+        href: "/fonts/fraunces-600-latin.woff2",
+        crossOrigin: "anonymous",
+      },
+    ],
+    // schema.org Person, emitted through the head API rather than a raw
+    // <script dangerouslySetInnerHTML>. This is what lets a search engine treat
+    // "Spencer Will" as an entity with a job, an employer and verified
+    // profiles, rather than a string that happens to appear on a page.
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify(personSchema),
       },
     ],
   }),

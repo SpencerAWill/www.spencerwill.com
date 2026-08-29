@@ -1,6 +1,44 @@
 @import "tailwindcss";
 
 /* ---------------------------------------------------------------------------
+   Self-hosted, latin subset only. Previously these came from Google Fonts,
+   which meant two extra origins to resolve and connect to before any text
+   could paint, and disclosed every visitor's IP to a third party -- the basis
+   of the 2022 German ruling that embedding them without consent breaches GDPR.
+
+   Variable files spanning only the weights actually used (500 and 600 are the
+   only weight utilities in the codebase, plus 400 for body copy). The previous
+   Google request also pulled 700s and a Fraunces 400 that nothing rendered.
+   --------------------------------------------------------------------------- */
+@font-face {
+  font-family: "Fraunces";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/fraunces-600-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/inter-400-600-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url("/fonts/jetbrains-mono-400-500-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+
+/* ---------------------------------------------------------------------------
    Semantic palette. Tailwind's @theme below points at these, so every utility
    (bg-paper, text-ink, ...) resolves through one indirection and re-themes at
    runtime. Swapping a value here re-colours the whole site with no rebuild.

@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Keep the résumé reachable but out of search results -- it carries a phone
+# number and personal email, and an indexed PDF is trivially scraped.
+# Disallow only stops crawling; a URL linked from elsewhere can still surface
+# without content. Pair this with an `X-Robots-Tag: noindex` response header on
+# /resume.pdf when the hosting config is set up.
+Disallow: /resume.pdf
+
+Sitemap: https://spencerwill.com/sitemap.xml

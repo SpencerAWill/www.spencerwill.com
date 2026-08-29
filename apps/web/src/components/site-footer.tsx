@@ -24,7 +24,8 @@ export function SiteFooter() {
         ))}
       </ul>
       <p className="mt-4 text-[0.81rem] text-muted">
-        Built with TanStack Start on Cloudflare.
+        © {new Date().getFullYear()} {profile.name}. Built with TanStack Start
+        on Cloudflare.
       </p>
     </footer>
   );

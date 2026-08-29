@@ -15,6 +15,8 @@ export const profile = {
   pitchTail:
     "of a multi-tenant payroll integration platform, live for a national HR/payroll provider in about three months.",
   url: "https://spencerwill.com",
+  employerUrl: "https://sevenhillstechnology.com",
+  university: "University of Cincinnati",
   avatar: "/avatar-160.webp",
   avatarAlt: "Spencer Will, standing above a snow-covered Bryce Canyon",
   links: {
