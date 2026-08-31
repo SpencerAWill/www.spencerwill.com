@@ -1,0 +1,22 @@
+{
+  "name": "@spencerwill/infra",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pulumi infrastructure for www.spencerwill.com",
+  "type": "module",
+  "main": "index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "format": "biome format",
+    "lint": "biome lint",
+    "check": "biome check"
+  },
+  "dependencies": {
+    "@pulumi/cloudflare": "^6.19.0",
+    "@pulumi/pulumi": "^3.259.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^6.0.2"
+  }
+}

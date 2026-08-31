@@ -11,6 +11,8 @@
       "**/src/**/*",
       "**/index.html",
       "**/vite.config.ts",
+      "infra/**/*.ts",
+      "**/wrangler.jsonc",
       ".zed/**/*",
       "apps/**/*.json",
       "package.json",

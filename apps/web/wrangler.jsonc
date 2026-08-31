@@ -1,0 +1,48 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+
+  // Script identity in the Cloudflare account, and the value Pulumi binds the
+  // apex hostname to -- see `workerName` in `infra/Pulumi.prod.yaml` and the
+  // `WorkersCustomDomain` resource in `infra/index.ts`. Renaming here without
+  // renaming there uploads a second script and leaves the apex pointed at the
+  // old one, so the change looks deployed and does nothing.
+  "name": "spencerwill-web",
+
+  // Pinned rather than tracking "today". A compatibility date is the runtime
+  // behavior contract; moving it is a deliberate upgrade to be made and tested,
+  // not something that should drift because a file was regenerated.
+  "compatibility_date": "2026-08-20",
+
+  // TanStack Start's server entry reaches for Node built-ins (`node:async_hooks`
+  // among them) that workerd only exposes behind this flag. Without it the
+  // worker fails at module load, not at request time, so the first symptom is a
+  // deploy that succeeds and a site that 500s on every request.
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Resolved from the installed @tanstack/react-start package, not a file in
+  // this repo -- Start owns the fetch handler. There is nothing to write here
+  // unless the app needs a `scheduled` or `queue` handler, at which point this
+  // becomes a local module that re-exports Start's `fetch`.
+  "main": "@tanstack/react-start/server-entry",
+
+  // No `assets` block on purpose: @cloudflare/vite-plugin derives the assets
+  // directory from the Vite build and writes the resolved config into the build
+  // output, which is what `wrangler deploy` actually reads. Declaring it here
+  // conflicts with the plugin rather than reinforcing it.
+
+  // The apex is the only hostname this worker should answer on. Left at the
+  // default, Cloudflare also publishes it at
+  // `spencerwill-web.<subdomain>.workers.dev`, which is a second indexable
+  // origin serving identical content -- duplicate content against the canonical
+  // URL the app advertises, and a public URL that outlives any DNS change.
+  // Preview URLs are off for the same reason.
+  "workers_dev": false,
+  "preview_urls": false,
+
+  // Structured logs and invocation traces in the dashboard (~7 day retention),
+  // and `wrangler tail` streaming. This site logs nothing user-shaped, so there
+  // is no PII discipline to apply beyond not adding any.
+  "observability": {
+    "enabled": true
+  }
+}

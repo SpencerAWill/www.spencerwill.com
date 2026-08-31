@@ -1,0 +1,20 @@
+config:
+  # Same Cloudflare account and zone as ucmc.spencerwill.com -- that site is a
+  # subdomain of this zone, not a separate one. Two Pulumi projects therefore
+  # write into one zone, which is fine as long as neither manages zone-wide
+  # settings; this one deliberately manages only its own hostnames and one
+  # redirect rule. Adding a `cloudflare.ZoneSetting` here would silently change
+  # behavior for ucmc too.
+  spencerwill-infra:accountId: d57880630b3277f59331318b53f323b6
+  spencerwill-infra:zoneId: 6bfb4d1d3134e6d765aef413094cd28f
+  spencerwill-infra:zoneName: spencerwill.com
+
+  # The apex is canonical. This matches what the app already declares in
+  # `apps/web/src/data/profile.ts` (`profile.url`), the `rel=canonical` link in
+  # `__root.tsx`, `public/sitemap.xml`, and the Sitemap line in `robots.txt`.
+  # Changing it means changing all five, not just this line.
+  spencerwill-infra:hostname: spencerwill.com
+  spencerwill-infra:redirectHostname: www.spencerwill.com
+
+  # Must match `name` in `apps/web/wrangler.jsonc`.
+  spencerwill-infra:workerName: spencerwill-web

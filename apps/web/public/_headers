@@ -1,0 +1,17 @@
+# Response headers for statically served assets, applied by Workers static
+# assets. Cloudflare strips this file from the deployed asset set, so it is not
+# itself reachable over HTTP.
+#
+# Important limitation: these rules apply only to responses served directly from
+# the asset store. Anything rendered by the worker (every HTML route, since this
+# app is SSR) bypasses them entirely -- those headers have to be set in app code.
+# Everything below is deliberately a real file on disk.
+
+# robots.txt already disallows crawling /resume.pdf, but Disallow only stops the
+# fetch: a URL linked from somewhere else can still be indexed as a bare result
+# with no content. X-Robots-Tag is the half that removes it from the index, and
+# it has to be a response header because a PDF has nowhere to put a meta tag.
+# The file stays publicly reachable on purpose -- it is linked from the site and
+# meant to be read by people, just not surfaced by search.
+/resume.pdf
+  X-Robots-Tag: noindex

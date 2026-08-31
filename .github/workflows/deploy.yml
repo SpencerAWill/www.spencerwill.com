@@ -1,0 +1,87 @@
+name: Deploy
+
+# Third-party actions are pinned to commit SHAs, not tags. A tag is a mutable
+# pointer: whoever controls the action's repository can move `v4` to a new commit
+# at any time, and every workflow that references it picks that up on the next
+# run. Jobs here hand CLOUDFLARE_API_TOKEN and PULUMI_ACCESS_TOKEN to those
+# actions, so a moved tag is a credential-exfiltration path, not a broken build.
+# The trailing comment records which release each SHA was, since the SHA alone is
+# unreadable. Bumping one means resolving the new SHA deliberately -- see
+# .github/dependabot.yml, which raises those bumps as PRs.
+
+# Manual only. There is one environment and it is production, so every run of
+# this workflow is a change to the live site; that should be a decision, not a
+# side effect of pushing a commit. Deploys whatever ref you dispatch it from.
+on:
+  workflow_dispatch:
+
+# Serializes runs so two dispatches cannot race each other onto the same worker.
+# `cancel-in-progress: false` because cancelling mid-deploy is worse than
+# queueing -- a half-applied `pulumi up` is a state to reconcile, not a no-op.
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  # Order matters and is load-bearing on a first run: `WorkersCustomDomain` in
+  # the Pulumi program binds a hostname to a Worker *by name*, and Cloudflare
+  # rejects that binding if no script by that name exists. So the script is
+  # uploaded first. Nothing here produces a value the build needs, so the
+  # dependency only ever runs in this direction -- unlike ucmc.spencerwill.com,
+  # where Pulumi owns D1/KV UUIDs that have to be injected before the build.
+  web:
+    name: Web — build and deploy Worker
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    environment: prod
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # Separate from the deploy step so a build failure is legible as a build
+      # failure. @cloudflare/vite-plugin writes the resolved wrangler config
+      # into the build output; `wrangler deploy` below reads that snapshot
+      # rather than apps/web/wrangler.jsonc directly.
+      - name: Build
+        run: pnpm --filter web build
+
+      - name: Deploy Worker
+        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/web
+          command: deploy
+
+  infra:
+    name: Infra — apply Cloudflare resources
+    needs: web
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    environment: prod
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - uses: pulumi/actions@8e5e406f4007fca908480587cb9893c07090f58d # v7.0.0
+        with:
+          command: up
+          stack-name: prod
+          work-dir: infra
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

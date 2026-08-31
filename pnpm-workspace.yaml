@@ -1,5 +1,11 @@
 packages:
   - apps/*
+  # The Pulumi program is a workspace package so it shares the root lockfile and
+  # toolchain, and so CI installs it with the same `pnpm install --frozen-lockfile`
+  # as the app. Pulumi's nodejs runtime resolves `@pulumi/*` from node_modules at
+  # `pulumi up` time, which works because the pnpm workspace links them into
+  # infra/node_modules like any other package.
+  - infra
 
 # Native postinstall builds are opt-in in pnpm 11. These two ship prebuilt
 # binaries that Vite/Tailwind need at build time, so they must be allowed to
@@ -8,6 +14,15 @@ packages:
 allowBuilds:
   esbuild: true
   lightningcss: true
+  # workerd is the Workers runtime itself -- @cloudflare/vite-plugin runs the
+  # SSR environment inside it for `pnpm dev`, and wrangler runs it for local
+  # preview. Its postinstall selects and links the prebuilt binary for the
+  # current platform; blocked, the package installs "successfully" and every
+  # invocation fails on a missing binary.
+  workerd: true
+  # Pulled in by @pulumi/pulumi. Its postinstall generates the static protobuf
+  # accessors used for gRPC to the Pulumi engine.
+  protobufjs: true
 
 # pnpm fills node_modules by hardlinking out of its content-addressable store,
 # and hardlinks cannot cross filesystems. In the dev container node_modules is a
