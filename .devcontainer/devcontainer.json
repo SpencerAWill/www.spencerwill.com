@@ -38,7 +38,24 @@
     // resolves, and the npm-package feature it pulls at install time, are not
     // covered by it. Pass "version": "4.127.0" here if that matters more than
     // staying current.
-    "ghcr.io/devcontainers-extra/features/cloudflare-wrangler:1": {}
+    "ghcr.io/devcontainers-extra/features/cloudflare-wrangler:1": {},
+    // Pulumi CLI, for the infra/ project. Unlike the zsh-plugin feature this
+    // config deliberately avoids, this one is a thin wrapper around the vendor's
+    // own get.pulumi.com installer rather than a clone of an unpinned HEAD, so
+    // the thing being trusted is Pulumi's release channel.
+    //
+    // "latest" rather than pinned, matching the wrangler feature above. The CLI
+    // is a client for a hosted service and the two are expected to track each
+    // other; pinning it here would mean chasing a version bump every time the
+    // Pulumi Cloud API moves. State format changes are backward-compatible, so a
+    // newer CLI cannot strand an older stack.
+    //
+    // Authentication is not handled here: `pulumi login` writes a token to
+    // ~/.pulumi/credentials.json, which is not one of the mounted volumes, so
+    // the container starts logged out. Either run `pulumi login` after attaching,
+    // or export PULUMI_ACCESS_TOKEN. Deliberate -- a long-lived org token is not
+    // something to persist into an image layer or a shared volume.
+    "ghcr.io/devcontainers-extra/features/pulumi:1": {}
   },
 
   "remoteUser": "dev",
