@@ -1,0 +1,11 @@
+name: spencerwill-infra
+description: Cloudflare infrastructure for www.spencerwill.com
+runtime:
+  name: nodejs
+  options:
+    typescript: true
+    packagemanager: pnpm
+config:
+  pulumi:tags:
+    value:
+      pulumi:template: typescript
