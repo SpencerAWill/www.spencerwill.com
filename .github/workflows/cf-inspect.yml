@@ -35,9 +35,19 @@ jobs:
         run: |
           set -euo pipefail
 
-          rulesets=$(curl -sS --fail-with-body \
+          # No per_page: the rulesets list endpoint rejects it with a 400.
+          # Errors are printed rather than swallowed -- Cloudflare puts the
+          # useful part in the response body, and `set -e` on a bare curl would
+          # discard it.
+          rulesets=$(curl -sS \
             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-            "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/rulesets?per_page=100")
+            "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/rulesets")
+
+          if [ "$(echo "$rulesets" | jq -r '.success')" != "true" ]; then
+            echo "Cloudflare API call failed:"
+            echo "$rulesets" | jq '.errors'
+            exit 1
+          fi
 
           id=$(echo "$rulesets" | jq -r '
             .result[]
