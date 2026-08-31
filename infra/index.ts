@@ -58,6 +58,16 @@ const workerName = cfg.require("workerName");
 
 const stack = pulumi.getStack();
 
+// Cloudflare's reference to the first wildcard capture group, for use inside a
+// `wildcard_replace` target. Held in a constant rather than written inline
+// because `${1}` in source reads as a TypeScript template placeholder -- to
+// linters and to people -- and the two mean opposite things. Interpolating it
+// away would ship a bare `https://` as the redirect target; this way the literal
+// is stated once, deliberately, and the template below reads as the substitution
+// it actually is.
+// biome-ignore lint/suspicious/noTemplateCurlyInString: the point of this constant
+const WILDCARD_CAPTURE = "${1}";
+
 // Binds the apex to the Worker. Cloudflare provisions the proxied DNS record
 // and the edge certificate implicitly -- there is no `cloudflare.DnsRecord` for
 // the apex here, and adding one would fight this resource for ownership of the
@@ -106,58 +116,75 @@ const wwwRecord = new cloudflare.DnsRecord(`spencerwill-web-${stack}-www`, {
   comment: "Managed by Pulumi (spencerwill-infra). Redirects to the apex.",
 });
 
-// Collapses www onto the apex with a permanent redirect, so exactly one
-// hostname is canonical and search engines are told which.
+// Collapses www onto the apex with a permanent 301, so exactly one hostname is
+// canonical and search engines are told which.
 //
-// The target is an `expression` rather than a plain `value` because a plain
-// value is the *entire* destination URL -- every path would land on the
-// homepage, silently turning deep links into a soft 404. `concat` rebuilds the
-// path; `preserveQueryString` carries the query separately (it is not part of
-// `http.request.uri.path`).
+// This ADOPTS the zone's existing redirect rather than creating one. The zone
+// already had a "www to root" rule, written by hand long before this program
+// existed, and a phase entrypoint ruleset is a singleton: Cloudflare permits at
+// most one per zone per phase and rejects a second with error 20217
+// ("exceeded maximum number of zone rulesets"), which is exactly how the first
+// deploy failed.
 //
-// 301 rather than 302: this is a permanent statement about which hostname owns
-// the content, and it is what lets the redirect be cached and link equity be
-// passed. It is also the expensive one to get wrong -- browsers cache 301s
-// aggressively, so flipping canonical hostnames later means users who visited
-// during this period keep redirecting until their cache expires.
+// Deleting the old one was the obvious alternative and is the wrong move.
+// Removing the rule in the dashboard leaves the ruleset itself behind, so the
+// conflict survives; and Cloudflare has a known soft-delete defect where a
+// deleted zone ruleset still counts against the phase limit, which can leave the
+// zone in a state that is harder to recover from than this one. Importing costs
+// nothing and takes the redirect offline for zero seconds.
 //
-// `kind: "zone"` with `phase: "http_request_dynamic_redirect"` is the Rules
-// engine's single-redirect entry point. Cloudflare allows exactly one ruleset
-// per zone per phase, so this resource owns the zone's entire dynamic-redirect
-// list: any rule added by hand in the dashboard will be removed on the next
-// `pulumi up`. Add rules to the array below instead.
+// The rule below is reproduced from what was already live, not redesigned, so
+// the adopting update is a no-op. It is also simply better than the
+// host-equality rule this program originally declared: `wildcard_replace` over
+// `full_uri` carries the path and query across without either being named, and
+// it covers any future `www.<anything>.spencerwill.com` rather than one literal
+// hostname.
+//
+// Because the entrypoint ruleset is a zone singleton, this resource owns the
+// zone's ENTIRE dynamic-redirect list -- ucmc.spencerwill.com's included, were
+// it ever to want one. A rule added by hand in the dashboard will be removed on
+// the next `pulumi up`. Add rules to the array below instead.
 const redirectRuleset = new cloudflare.Ruleset(
   `spencerwill-web-${stack}-www-redirect`,
   {
     zoneId,
     kind: "zone",
     phase: "http_request_dynamic_redirect",
-    name: "Redirect www to apex",
-    description: "Managed by Pulumi (spencerwill-infra).",
+    // "default" is the name Cloudflare assigns a phase entrypoint ruleset.
+    // Matching it keeps the adopting update from renaming a singleton for
+    // cosmetic reasons.
+    name: "default",
     rules: [
       {
-        ref: "www_to_apex",
-        description: `Permanent redirect ${redirectHostname} -> ${hostname}`,
+        description: "www to root",
         enabled: true,
-        expression: `(http.host eq "${redirectHostname}")`,
+        expression: '(http.request.full_uri wildcard r"https://www.*")',
         action: "redirect",
         actionParameters: {
           fromValue: {
             statusCode: 301,
             targetUrl: {
-              expression: `concat("https://${hostname}", http.request.uri.path)`,
+              expression: `wildcard_replace(http.request.full_uri, r"https://www.*", r"https://${WILDCARD_CAPTURE}")`,
             },
-            preserveQueryString: true,
+            // Deliberately false. `full_uri` already contains the query string,
+            // so `wildcard_replace` has carried it into the target -- preserving
+            // it again would append a second copy.
+            preserveQueryString: false,
           },
         },
       },
     ],
   },
-  // The rule matches on `http.host`, which only produces traffic once the
-  // record exists. Creating them in the other order leaves a window where the
-  // rule is live and unreachable -- harmless, but the explicit dependency makes
-  // `pulumi preview` show the two as the single change they actually are.
-  { dependsOn: [wwwRecord] },
+  {
+    // The rule matches on the request URI, which only produces traffic once the
+    // record exists.
+    dependsOn: [wwwRecord],
+    // Adopt the pre-existing ruleset instead of creating a second one. Format is
+    // `{accounts|zones}/{id}/{ruleset_id}`, per the provider SDK. Remove this
+    // option once the import has landed in state -- it has served its purpose
+    // and the literal id does not belong in code long-term.
+    import: `zones/${zoneId}/0e33f1ff194d49ed8081931960eb15b3`,
+  },
 );
 
 export const stackName = stack;
