@@ -29,7 +29,7 @@ import * as pulumi from "@pulumi/pulumi";
  * worker's own code -- there was no redirect rule and no CNAME. Two consequences
  * that are not obvious from reading the resources below:
  *
- *   1. `static-website` is deleted outright as part of the cutover, which
+ *   1. `static-website` was deleted outright as part of the cutover, which
  *      releases both hostnames and deletes their DNS records in one action.
  *      Cloudflare will not attach a hostname that already has a Custom Domain,
  *      and it refuses to create a Custom Domain on a hostname carrying a
@@ -179,11 +179,6 @@ const redirectRuleset = new cloudflare.Ruleset(
     // The rule matches on the request URI, which only produces traffic once the
     // record exists.
     dependsOn: [wwwRecord],
-    // Adopt the pre-existing ruleset instead of creating a second one. Format is
-    // `{accounts|zones}/{id}/{ruleset_id}`, per the provider SDK. Remove this
-    // option once the import has landed in state -- it has served its purpose
-    // and the literal id does not belong in code long-term.
-    import: `zones/${zoneId}/0e33f1ff194d49ed8081931960eb15b3`,
   },
 );
 
