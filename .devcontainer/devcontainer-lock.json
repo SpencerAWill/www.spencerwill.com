@@ -10,6 +10,11 @@
       "resolved": "ghcr.io/devcontainers-extra/features/cloudflare-wrangler@sha256:36f8ceba43b2503022e6eff4ad80ef4848d54c369d9bc966bf7063517b9a7eb5",
       "integrity": "sha256:36f8ceba43b2503022e6eff4ad80ef4848d54c369d9bc966bf7063517b9a7eb5"
     },
+    "ghcr.io/devcontainers-extra/features/pulumi:1": {
+      "version": "1.2.4",
+      "resolved": "ghcr.io/devcontainers-extra/features/pulumi@sha256:99ad8f91bd273eda83a0794565015314f463e7c07c76c3e4de8f28dd5c795d5e",
+      "integrity": "sha256:99ad8f91bd273eda83a0794565015314f463e7c07c76c3e4de8f28dd5c795d5e"
+    },
     "ghcr.io/devcontainers/features/common-utils:2": {
       "version": "2.5.9",
       "resolved": "ghcr.io/devcontainers/features/common-utils@sha256:cb0c4d3c276f157eed17935747e364178d75fee17f55c4e129966f64633deb3a",
